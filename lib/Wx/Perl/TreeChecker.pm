@@ -2,9 +2,9 @@
 ## Name:        Wx::Perl::TreeChecker
 ## Purpose:     Tree Control with checkbox functionality
 ## Author:      Simon Flack
-## Modified by: $Author: simonflack $ on $Date: 2003/09/04 14:31:34 $
+## Modified by: $Author: simonflack $ on $Date: 2004/04/17 22:16:38 $
 ## Created:     28/11/2002
-## RCS-ID:      $Id: TreeChecker.pm,v 1.08 2003/09/04 14:31:34 simonflack Exp $
+## RCS-ID:      $Id: TreeChecker.pm,v 1.11 2004/04/17 22:16:38 simonflack Exp $
 #############################################################################
 
 package Wx::Perl::TreeChecker;
@@ -16,7 +16,7 @@ use Exporter;
 use Carp;
 
 @ISA = ('Wx::TreeCtrl', 'Exporter');
-$VERSION = sprintf'%d.%02d', q$Revision: 1.08 $ =~ /: (\d+)\.(\d+)/;
+$VERSION = sprintf'%d.%02d', q$Revision: 1.11 $ =~ /: (\d+)\.(\d+)/;
 @EXPORT_OK = qw(TC_SELECTED TC_PART_SELECTED TC_IMG_ROOT TC_IMG_C_NORMAL
                 TC_NORMAL);
 %EXPORT_TAGS = (status => ['TC_SELECTED', 'TC_PART_SELECTED'],
@@ -525,22 +525,31 @@ sub _makedata {
 ##############################################################################
 # Default Icons - XPM
 
+sub std_icons {
+    Wx::Image::AddHandler( new Wx::XPMHandler() );
+    my @icons;
+    push @icons, Wx::Icon->newFromXPM (_empty_checkbox());
+    push @icons, Wx::Icon->newFromXPM (_ticked_checkbox());
+    push @icons, Wx::Icon->newFromXPM (_grey_checkbox());
+
+    return @icons;
+}
+
 sub _default_images {
     my $self = shift;
-    my $_images = new Wx::ImageList (16, 16, 1);
-    Wx::Image::AddHandler( new Wx::XPMHandler() );
-    my $_empty_xpm  = $self -> _empty_checkbox();
-    my $_ticked_xpm = $self -> _ticked_checkbox();
-    my $_part_xpm   = $self -> _grey_checkbox();
 
-    $_images -> Add( Wx::Icon->newFromXPM($_empty_xpm) );
-    $_images -> Add( Wx::Icon->newFromXPM($_ticked_xpm) );
-    $_images -> Add( Wx::Icon->newFromXPM($_part_xpm) );
-    $_images -> Add( Wx::Icon->newFromXPM($_empty_xpm) );
-    $_images -> Add( Wx::Icon->newFromXPM($_ticked_xpm) );
-    $_images -> Add( Wx::Icon->newFromXPM($_part_xpm) );
-    $_images -> Add( Wx::Icon->newFromXPM($_empty_xpm) );
-    $_images -> Add( Wx::Icon->newFromXPM($_ticked_xpm) );
+    my ($_empty_xpm, $_ticked_xpm, $_part_xpm) = $self -> std_icons();
+    my $_images = new Wx::ImageList (16, 16, 1);
+
+    $_images -> Add( $_empty_xpm );
+    $_images -> Add( $_ticked_xpm );
+    $_images -> Add( $_part_xpm );
+    $_images -> Add( $_empty_xpm );
+    $_images -> Add( $_ticked_xpm );
+    $_images -> Add( $_part_xpm );
+    $_images -> Add( $_empty_xpm );
+    $_images -> Add( $_ticked_xpm );
+    $_images -> Add( $_part_xpm );
     return $_images;
 }
 
@@ -603,11 +612,10 @@ EOT_P
 
 sub _grey_checkbox {
     my $self = shift;
-    my @checkbox = @{$self -> _ticked_checkbox()};
+    my @checkbox = @{_ticked_checkbox()};
     $checkbox[3] = 'o	c Gray60';
     return \@checkbox
 }
-
 
 
 1;
@@ -633,8 +641,7 @@ Wx::Perl::TreeChecker - Tree Control with checkbox functionality
 
 =head1 DESCRIPTION
 
-Wx::Perl::TreeChecker is a Wx::TreeCtrl on steroids. It's been given
-characteristics from a Wx::CheckBox so users can select parts of a tree.
+Wx::Perl::TreeChecker is a tree control with check boxes so users can select parts of the tree.
 
 A typical use would be a file-selector for backup / archive.
 
@@ -746,10 +753,25 @@ see C<new()>
 
 =back
 
+=head1 XRC
+
+See L<Wx::Perl::TreeChecker::XmlHandler>
+
 =head1 CHECKBOX IMAGES
 
 A default set of checkbox icons are included. You can override these by
 supplying a C<Wx::ImageList> to the constructor or the C<SetImageList> method.
+
+=over 4
+
+=item std_icons()
+
+This class method returns the three standard icons that you can mix with your
+own icons.
+
+  my ($empty, $ticked, $part_selected) = Wx::Perl::TreeChecker->std_icons();
+
+=back
 
 The Image list must contain 8 icons, 16 x 16 pixels:
 

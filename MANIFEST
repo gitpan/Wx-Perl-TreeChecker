@@ -4,5 +4,10 @@ MANIFEST
 MANIFEST.SKIP
 README
 lib/Wx/Perl/TreeChecker.pm
+lib/Wx/Perl/TreeChecker/XmlHandler.pm
 t/01__load.t
-samples/treechecker.pl
+t/02_check.t
+t/03___xrc.t
+t/treechecker.xrc
+demo/treechecker.pl
+META.yml                                 Module meta-data (added by MakeMaker)
