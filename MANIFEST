@@ -1,0 +1,8 @@
+Changes
+Makefile.PL
+MANIFEST
+MANIFEST.SKIP
+README
+lib/Wx/Perl/TreeChecker.pm
+t/01__load.t
+samples/treechecker.pl

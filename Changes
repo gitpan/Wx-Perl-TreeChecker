@@ -1,0 +1,19 @@
+Revision history for Perl extension Wx::Perl::TreeChecker.
+$Id: Changes,v 1.3 2003/04/13 22:43:48 simonflack Exp $
+
+1.05  Sun Apr 13 2003
+    - First release to CPAN
+    - Add missing methods: PrependItem(), InsertItem(), SelectItem()
+    - rename Reset() to UnselectAll()
+
+1.04  Sat Apr 12 2003
+    - Add containers to list returned by GetSelection()
+    - croak unless IsSelected(), IsContainer() passed a Wx::TreeItemId
+    - make Reset() public method
+    - update POD, license, add sample
+
+1.03  Wed Apr  9 2003
+    - Change event from double-click right mouse to single click on icon
+
+1.00  Wed Dec  4 2002
+    - Initial revision
