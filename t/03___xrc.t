@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: 03___xrc.t,v 1.1 2004/04/17 22:16:19 simonflack Exp $
+# $Id: 03___xrc.t,v 1.2 2005/03/25 13:44:30 simonflack Exp $
 
 use strict;
 use Test::More tests => 8;
@@ -17,7 +17,7 @@ my $res_handler;
 getopts('i', \my %opt);
 
 SKIP: {
-    skip "XRC not supported", 7, unless eval "use Wx::XRC; 1";
+    skip "XRC not supported", 8, unless eval "use Wx::XRC; 1";
 
     use_ok('Wx::Perl::TreeChecker::XmlHandler');
 

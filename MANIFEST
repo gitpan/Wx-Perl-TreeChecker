@@ -9,5 +9,6 @@ t/01__load.t
 t/02_check.t
 t/03___xrc.t
 t/treechecker.xrc
+t/pod.t
 demo/treechecker.pl
 META.yml                                 Module meta-data (added by MakeMaker)

@@ -2,9 +2,9 @@
 ## Name:        Wx::Perl::TreeChecker
 ## Purpose:     Tree Control with checkbox functionality
 ## Author:      Simon Flack
-## Modified by: $Author: simonflack $ on $Date: 2004/08/09 19:11:31 $
+## Modified by: $Author: simonflack $ on $Date: 2005/03/25 13:44:30 $
 ## Created:     28/11/2002
-## RCS-ID:      $Id: TreeChecker.pm,v 1.12 2004/08/09 19:11:31 simonflack Exp $
+## RCS-ID:      $Id: TreeChecker.pm,v 1.13 2005/03/25 13:44:30 simonflack Exp $
 #############################################################################
 
 package Wx::Perl::TreeChecker;
@@ -16,7 +16,7 @@ use Exporter;
 use Carp;
 
 @ISA = ('Wx::TreeCtrl', 'Exporter');
-$VERSION = sprintf'%d.%02d', q$Revision: 1.12 $ =~ /: (\d+)\.(\d+)/;
+$VERSION = sprintf'%d.%02d', q$Revision: 1.13 $ =~ /: (\d+)\.(\d+)/;
 @EXPORT_OK = qw(TC_SELECTED TC_PART_SELECTED TC_SEL_COMPACT TC_SEL_FULL
                 TC_IMG_ROOT TC_IMG_C_NORMAL TC_NORMAL);
 %EXPORT_TAGS = (status => [qw(TC_SELECTED TC_PART_SELECTED TC_SEL_COMPACT
@@ -870,7 +870,7 @@ wxPerl L<http://wxperl.sourceforge.net>
 
 =head1 COPYRIGHT
 
-Copyright 2003 Simon Flack E<lt>simonflk _AT_ cpan.orgE<gt>.
+Copyright (c) 2003, 2004, 2005  Simon Flack E<lt>simonflk _AT_ cpan.orgE<gt>.
 All rights reserved
 
 You may distribute under the terms of either the GNU General Public License or
