@@ -2,9 +2,9 @@
 ## Name:        treechecker.pl
 ## Purpose:     Wx::Perl::TreeChecker Sample
 ## Author:      Simon Flack
-## Modified by: $Author: simonflack $ on $Date: 2003/04/13 22:41:27 $
+## Modified by: $Author: simonflack $ on $Date: 2003/08/30 15:39:31 $
 ## Created:     12/04/2003
-## RCS-ID:      $Id: treechecker.pl,v 1.4 2003/04/13 22:41:27 simonflack Exp $
+## RCS-ID:      $Id: treechecker.pl,v 1.1.1.1 2003/08/30 15:39:31 simonflack Exp $
 #############################################################################
 
 use strict;
@@ -190,7 +190,7 @@ sub OnToggleSelectAll {
 
 package main;
 use vars '$VERSION';
-$VERSION = sprintf'%d.%02d', q$Revision: 1.4 $ =~ /: (\d+)\.(\d+)/;
+$VERSION = sprintf'%d.%02d', q$Revision: 1.1.1.1 $ =~ /: (\d+)\.(\d+)/;
 
 my $sample = new MyTreeChecker_App;
 $sample -> MainLoop;

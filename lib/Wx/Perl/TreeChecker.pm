@@ -2,21 +2,21 @@
 ## Name:        Wx::Perl::TreeChecker
 ## Purpose:     Tree Control with checkbox functionality
 ## Author:      Simon Flack
-## Modified by: $Author: simonflack $ on $Date: 2003/07/13 18:17:17 $
+## Modified by: $Author: simonflack $ on $Date: 2003/09/04 14:31:34 $
 ## Created:     28/11/2002
-## RCS-ID:      $Id: TreeChecker.pm,v 1.7 2003/07/13 18:17:17 simonflack Exp $
+## RCS-ID:      $Id: TreeChecker.pm,v 1.08 2003/09/04 14:31:34 simonflack Exp $
 #############################################################################
 
 package Wx::Perl::TreeChecker;
 use strict;
 use vars qw(@ISA $VERSION @EXPORT_OK %EXPORT_TAGS);
 use Wx ':treectrl', 'wxTR_MULTIPLE', 'WXK_SPACE';
-use Wx::Event 'EVT_LEFT_DOWN', 'EVT_KEY_DOWN';
+use Wx::Event qw[EVT_LEFT_DOWN EVT_LEFT_DCLICK EVT_KEY_DOWN];
 use Exporter;
 use Carp;
 
 @ISA = ('Wx::TreeCtrl', 'Exporter');
-$VERSION = sprintf'%d.%02d', q$Revision: 1.7 $ =~ /: (\d+)\.(\d+)/;
+$VERSION = sprintf'%d.%02d', q$Revision: 1.08 $ =~ /: (\d+)\.(\d+)/;
 @EXPORT_OK = qw(TC_SELECTED TC_PART_SELECTED TC_IMG_ROOT TC_IMG_C_NORMAL
                 TC_NORMAL);
 %EXPORT_TAGS = (status => ['TC_SELECTED', 'TC_PART_SELECTED'],
@@ -69,8 +69,9 @@ sub _init {
 
     $opts -> {allow_multiple} = 1 unless defined $opts -> {allow_multiple};
     $self -> allow_multiple ($opts -> {allow_multiple});
-    EVT_LEFT_DOWN ($self, \&OnSelectCheckBox);
-    EVT_KEY_DOWN  ($self, \&OnSelectCheckBox);
+    EVT_LEFT_DOWN   ($self, \&OnSelectCheckBox);
+    EVT_LEFT_DCLICK ($self, \&OnSelectCheckBox);
+    EVT_KEY_DOWN    ($self, \&OnSelectCheckBox);
 
     $self -> image_list($opts -> {image_list} || $self -> _default_images());
     $self -> containers_only ($opts -> {containers_only});
@@ -301,6 +302,7 @@ sub OnSelectCheckBox {
         my $pos = $event -> GetPosition;
         ($item, $flags) = $self -> HitTest ($pos);
         return $event -> Skip (1) unless $flags & wxTREE_HITTEST_ONITEMICON;
+        $event -> Skip (0) if $event -> ButtonDClick;
     }
 
     if ($self -> allow_multiple) {
@@ -768,7 +770,7 @@ See F<samples/treechecker.pl>
 
 =head1 AUTHOR
 
-Simon Flack E<lt>simon.flack@bbc.co.ukE<gt>
+Simon Flack E<lt>simonflk _AT_ cpan.orgE<gt>
 
 =head1 BUGS
 

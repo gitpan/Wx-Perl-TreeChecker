@@ -1,4 +1,4 @@
-# $Id: Makefile.PL,v 1.3 2003/04/12 17:54:00 simonflack Exp $
+# $Id: Makefile.PL,v 1.1.1.1 2003/08/30 15:39:31 simonflack Exp $
 use ExtUtils::MakeMaker;
 WriteMakefile(
     'NAME'		=> 'Wx::Perl::TreeChecker',

@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: 01__load.t,v 1.2 2003/04/12 17:50:34 simonflack Exp $
+# $Id: 01__load.t,v 1.1.1.1 2003/08/30 15:39:31 simonflack Exp $
 
 use strict;
 use Test::More tests => 3;

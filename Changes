@@ -1,5 +1,9 @@
 Revision history for Perl extension Wx::Perl::TreeChecker.
-$Id: Changes,v 1.4 2003/07/13 18:25:54 simonflack Exp $
+$Id: Changes,v 1.2 2003/09/04 23:25:32 simonflack Exp $
+
+1.08  Fri Sep  5 2003
+    - double-clicking on treeitem icons now acts like single-click
+        (it no longer expands the branch)
 
 1.07  Sun Jul 13 2003
     - Hitting SPACE key selects/unselects current item
