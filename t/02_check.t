@@ -1,8 +1,8 @@
 #!/usr/bin/perl
-# $Id: 02_check.t,v 1.1 2004/04/17 22:16:07 simonflack Exp $
+# $Id: 02_check.t,v 1.2 2004/08/09 19:09:00 simonflack Exp $
 
 use strict;
-use Test::More tests => 4;
+use Test::More tests => 7;
 
 use Wx ':treectrl';
 use File::Basename;
@@ -13,7 +13,7 @@ BEGIN {package My::Test::App; @My::Test::App::ISA = 'Wx::App';}
 
 getopts('i', \my %opt);
 
-use_ok('Wx::Perl::TreeChecker');
+BEGIN { use_ok('Wx::Perl::TreeChecker', ':status'); }
 
 my $app = new My::Test::App;
 my $treechecker = $app -> add_treechecker();
@@ -24,13 +24,13 @@ my %tree_layout = (
     'Makefile.PL' => 1,
     lib => {
         Wx => {
-	    Perl => {
-	        'TreeChecker.pm' => 1,
-		TreeChecker => {
-		    'XmlHandler.pm' => 1,
-		},
+            Perl => {
+                'TreeChecker.pm' => 1,
+                 TreeChecker => {
+                    'XmlHandler.pm' => 1,
+                 },
             },
-	},
+        },
     },
 );
 
@@ -40,8 +40,25 @@ $treechecker -> SelectItem ($root);
 my @selections = $treechecker -> GetSelections;
 is_selection (\@selections, [qw(/ /lib /lib/Wx /lib/Wx/Perl
                                 /lib/Wx/Perl/TreeChecker Makefile.PL
-				TreeChecker.pm XmlHandler.pm)]);
+                TreeChecker.pm XmlHandler.pm)]);
 $treechecker -> UnselectAll();
+
+# test compact selection
+$treechecker->SelectItem($lookup->{'/lib/Wx/Perl/TreeChecker/XmlHandler.pm'});
+@selections = $treechecker -> GetSelections(TC_SEL_COMPACT);
+is_selection(\@selections, ['/lib/Wx/Perl/TreeChecker']);
+
+$treechecker->SelectItem($lookup->{'/lib/Wx/Perl/TreeChecker.pm'});
+@selections = $treechecker -> GetSelections(TC_SEL_COMPACT);
+is_selection(\@selections, ['/lib']);
+
+# UnSelectItem
+$treechecker->UnSelectItem($lookup->{'/lib/Wx/Perl/TreeChecker.pm'});
+@selections = $treechecker -> GetSelections(TC_SEL_COMPACT);
+is_selection(\@selections, ['/lib/Wx/Perl/TreeChecker']);
+
+
+
 
 sub is_selection {
     my ($selections, $compare) = @_;
@@ -64,17 +81,17 @@ sub build_tree {
 
     my $lookup = {};
     foreach (sort keys %$layout) {
-	my $this_path = $path . '/' . $_;
+        my $this_path = $path . '/' . $_;
         if (ref $layout -> {$_}) {
-	    $lookup -> {$this_path} = $tree -> AppendContainer ($parent, $_,
-	                                                        tdata $this_path);
+            $lookup -> {$this_path} = $tree -> AppendContainer ($parent, $_,
+                                                                tdata $this_path);
             my $sub_lookup = build_tree ($tree, $lookup->{$this_path},
-	                                 $this_path, $layout -> {$_});
-	    %$lookup = (%$lookup, %$sub_lookup);
-	} else {
-	    $lookup -> {$this_path} = $tree -> AppendItem ($parent, $_,
-	                                                   tdata $_);
-	}
+                                         $this_path, $layout -> {$_});
+            %$lookup = (%$lookup, %$sub_lookup);
+        } else {
+            $lookup -> {$this_path} = $tree -> AppendItem ($parent, $_,
+                                                           tdata $_);
+        }
     }
     return $lookup;
 }

@@ -2,9 +2,9 @@
 ## Name:        Wx::Perl::TreeChecker
 ## Purpose:     Tree Control with checkbox functionality
 ## Author:      Simon Flack
-## Modified by: $Author: simonflack $ on $Date: 2004/04/17 22:16:38 $
+## Modified by: $Author: simonflack $ on $Date: 2004/08/09 19:11:31 $
 ## Created:     28/11/2002
-## RCS-ID:      $Id: TreeChecker.pm,v 1.11 2004/04/17 22:16:38 simonflack Exp $
+## RCS-ID:      $Id: TreeChecker.pm,v 1.12 2004/08/09 19:11:31 simonflack Exp $
 #############################################################################
 
 package Wx::Perl::TreeChecker;
@@ -16,14 +16,19 @@ use Exporter;
 use Carp;
 
 @ISA = ('Wx::TreeCtrl', 'Exporter');
-$VERSION = sprintf'%d.%02d', q$Revision: 1.11 $ =~ /: (\d+)\.(\d+)/;
-@EXPORT_OK = qw(TC_SELECTED TC_PART_SELECTED TC_IMG_ROOT TC_IMG_C_NORMAL
-                TC_NORMAL);
-%EXPORT_TAGS = (status => ['TC_SELECTED', 'TC_PART_SELECTED'],
-                icons  => ['TC_IMG_ROOT', 'TC_IMG_C_NORMAL', 'TC_IMG_NORMAL']);
+$VERSION = sprintf'%d.%02d', q$Revision: 1.12 $ =~ /: (\d+)\.(\d+)/;
+@EXPORT_OK = qw(TC_SELECTED TC_PART_SELECTED TC_SEL_COMPACT TC_SEL_FULL
+                TC_IMG_ROOT TC_IMG_C_NORMAL TC_NORMAL);
+%EXPORT_TAGS = (status => [qw(TC_SELECTED TC_PART_SELECTED TC_SEL_COMPACT
+                              TC_SEL_FULL)],
+                icons  => [qw(TC_IMG_ROOT TC_IMG_C_NORMAL TC_IMG_NORMAL)]);
 
-use constant TC_SELECTED       => 1;
-use constant TC_PART_SELECTED  => 2;
+use constant TC_SELECTED      => 1;  # tree item that is selected
+use constant TC_PART_SELECTED => 2;  # non-terminal tree item that has
+                                     # some children selected
+
+use constant TC_SEL_FULL      => 0;  # get all (part)?selected treeitems
+use constant TC_SEL_COMPACT   => 1;  # get a compact list
 
 # Name the Wx::ImageList indices
 use constant TC_IMG_ROOT                 => 0;   # root icon
@@ -268,6 +273,19 @@ sub SelectItem {
     return 1 if $self -> IsSelected ($item);
 }
 
+sub UnSelectItem {
+    my $self = shift;
+    my $item = shift;
+    croak "USAGE: UnSelectItem(Wx::TreeItemId)" unless defined $item
+            && ref $item && UNIVERSAL::isa($item, 'Wx::TreeItemId');
+    if ($self -> allow_multiple) {
+        $self -> on_select_multiple ($item, 0)
+    } else {
+        $self -> on_select_single ($item, 0)
+    }
+    return 1 if ! $self -> IsSelected ($item);
+}
+
 sub GetImageList {
     # Default method removes the list from memory
     my $self = shift;
@@ -280,11 +298,13 @@ sub SetImageList {
 }
 
 sub GetSelection {
-    return $_[0] -> _get_selected();
+    my $self = shift;
+    return $self -> _get_selected(@_);
 }
 
 sub GetSelections {
-    return $_[0] -> _get_selected();
+    my $self = shift;
+    return $self -> _get_selected(@_);
 }
 
 ##############################################################################
@@ -469,22 +489,30 @@ sub _update_parents {
 
 sub _get_selected{
     my $self = shift;
-    my $item = shift;
-    $item = $self -> GetRootItem() unless $item;
+    my ($style, $item) = @_;
+
+    $style ||= TC_SEL_FULL;
+    $item  ||= $self -> GetRootItem();
 
     my @_selected;
     my $data = $self -> SUPER::GetPlData( $item );
     my $container = $data  -> {container} || $self -> ItemHasChildren ($item);
 
-    if (!$container) {
-        return $item if $data -> {selected};
-        return;
-    } elsif ($data->{selected} && !$self -> allow_multiple) {
-        return $item;
-    } elsif ($data->{selected} && !$self -> items_only) {
-        push @_selected, $item;
-    } elsif ($self -> no_recurse) {
-        push @_selected, $item if $data->{selected} == TC_SELECTED
+    if ($container && $data -> {selected}) {
+        if ($style == TC_SEL_COMPACT && $data -> {selected} == TC_SELECTED) {
+            return $item;
+        } elsif ($style == TC_SEL_FULL) {
+            if ($data -> {selected} == TC_SELECTED) {
+                return $item if $self -> no_recurse;
+            }
+            push @_selected, $item;
+        }
+    } elsif ($container) {
+        # if allow_multiple is true and the container isn't selected, then none
+        # of its children are
+        return () if $self -> allow_multiple;
+    } else {
+        return $data -> {selected} ? $item : ();
     }
 
     # Now we recurse for all our children...
@@ -498,7 +526,7 @@ sub _get_selected{
         } else {
             ($child_id, $cookie) = $self -> GetNextChild ($item, $cookie);
         }
-        my @c_selected = $self -> _get_selected ($child_id);
+        my @c_selected = $self -> _get_selected ($style, $child_id);
         push @_selected, @c_selected if @c_selected;
     }
     return @_selected;
@@ -652,6 +680,9 @@ returned by
 
   $tree -> IsSelected($item)
 
+C<TC_SEL_FULL> and C<TC_SEL_COMPACT> are also exported. See
+L<"GetSelection(STYLE)"> for more information.
+
 You can export these constants with the ':status' import tag:
 
   use Wx::Perl::TreeChecker ':status';
@@ -719,6 +750,28 @@ its position (before).
 
 See InsertItem().
 
+=item GetSelection(STYLE)
+
+Returns a list of selected C<Wx::TreeItemId>s. The behaviour can be controlled by the C<STYLE> and the behaviour of the object (C<containers_only>,
+C<no_recurse>, etc).
+
+Allowed styles are;
+
+=over 4
+
+=item C<TC_SEL_FULL>
+
+The default if GetSelection is called without a C<STYLE>. It returns
+all tree items that are checked (C<TC_SELECTED> and C<TC_PART_SELECTED>)
+
+=item C<TC_SEL_COMPACT>
+
+This returns a compact list. If a Container item is C<TC_SELECTED>, it
+will be returned in place of it's child items. Containers that are
+C<TC_PART_SELECTED> are not returned.
+
+=back
+
 =item IsSelected ($item)
 
 returns the selection status of the item. See Exported flags.
@@ -730,6 +783,10 @@ returns TRUE if the item is a container
 =item SelectItem ($item)
 
 Select the item, returns TRUE if the item was selected.
+
+=item UnSelectItem ($item)
+
+Clear the selction of the item
 
 =item UnselectAll()
 
@@ -788,7 +845,7 @@ The Image list must contain 8 icons, 16 x 16 pixels:
 
 =head1 EXAMPLES
 
-See F<samples/treechecker.pl>
+See F<demo/treechecker.pl>
 
 =head1 AUTHOR
 
