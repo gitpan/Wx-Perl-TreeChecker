@@ -2,21 +2,21 @@
 ## Name:        Wx::Perl::TreeChecker
 ## Purpose:     Tree Control with checkbox functionality
 ## Author:      Simon Flack
-## Modified by: $Author: simonflack $ on $Date: 2003/04/13 22:41:08 $
+## Modified by: $Author: simonflack $ on $Date: 2003/07/13 18:17:17 $
 ## Created:     28/11/2002
-## RCS-ID:      $Id: TreeChecker.pm,v 1.5 2003/04/13 22:41:08 simonflack Exp $
+## RCS-ID:      $Id: TreeChecker.pm,v 1.7 2003/07/13 18:17:17 simonflack Exp $
 #############################################################################
 
 package Wx::Perl::TreeChecker;
 use strict;
 use vars qw(@ISA $VERSION @EXPORT_OK %EXPORT_TAGS);
-use Wx ':treectrl';
-use Wx::Event 'EVT_LEFT_DOWN';
+use Wx ':treectrl', 'wxTR_MULTIPLE', 'WXK_SPACE';
+use Wx::Event 'EVT_LEFT_DOWN', 'EVT_KEY_DOWN';
 use Exporter;
 use Carp;
 
 @ISA = ('Wx::TreeCtrl', 'Exporter');
-$VERSION = sprintf'%d.%02d', q$Revision: 1.5 $ =~ /: (\d+)\.(\d+)/;
+$VERSION = sprintf'%d.%02d', q$Revision: 1.7 $ =~ /: (\d+)\.(\d+)/;
 @EXPORT_OK = qw(TC_SELECTED TC_PART_SELECTED TC_IMG_ROOT TC_IMG_C_NORMAL
                 TC_NORMAL);
 %EXPORT_TAGS = (status => ['TC_SELECTED', 'TC_PART_SELECTED'],
@@ -40,9 +40,9 @@ my (%_multiple, %_images, %_containers_only, %_items_only, %_no_recurse);
 sub new {
     my $class = shift;
     my $opts = pop @_ if ref $_[-1] eq 'HASH';
-    my $self = $class->SUPER::new(@_);
+    my $self = $class -> SUPER::new (@_);
 
-    $self -> _init($opts || {});
+    $self -> _init ($opts || {});
     bless $self, $class;
     return $self;
 }
@@ -54,7 +54,7 @@ sub Convert {
             unless ref $treectrl && UNIVERSAL::isa($treectrl, 'Wx::TreeCtrl');
     $treectrl = bless $treectrl, $class;
 
-    $treectrl->_init($opts || {});
+    $treectrl -> _init ($opts || {});
     return $treectrl;
 }
 
@@ -62,9 +62,15 @@ sub _init {
     my $self = shift;
     my $opts = shift;
 
+    # Wx::Perl::TreeCheckers should be wxTR_SINGLE only
+    my $flag = $self->GetWindowStyleFlag();
+    $flag &=~ wxTR_MULTIPLE;
+    $self->SetWindowStyleFlag($flag);
+
     $opts -> {allow_multiple} = 1 unless defined $opts -> {allow_multiple};
     $self -> allow_multiple ($opts -> {allow_multiple});
-    EVT_LEFT_DOWN($self, \&OnSelectCheckBox );
+    EVT_LEFT_DOWN ($self, \&OnSelectCheckBox);
+    EVT_KEY_DOWN  ($self, \&OnSelectCheckBox);
 
     $self -> image_list($opts -> {image_list} || $self -> _default_images());
     $self -> containers_only ($opts -> {containers_only});
@@ -206,10 +212,10 @@ sub InsertContainer {
 }
 
 BEGIN {
-    *InsertItemPrev     = \&InsertItem;
-    *InsertItemBef      = \&InsertItem;
-    *InsertnConatiner   = \&InsertContainer;
-    *InsertContainerBef = \&InsertContainer;
+    *InsertItemPrev      = \&InsertItem;
+    *InsertItemBef       = \&InsertItem;
+    *InsertConatinerPrev = \&InsertContainer;
+    *InsertContainerBef  = \&InsertContainer;
 };
 
 sub GetPlData {
@@ -286,9 +292,16 @@ sub GetSelections {
 sub OnSelectCheckBox {
     my ($self, $event) = @_;
 
-    my $pos = $event->GetPosition();
-    my ($item, $flags) = $self->HitTest($pos);
-    return $event->Skip(1) unless $flags & wxTREE_HITTEST_ONITEMICON;
+    my $item;
+    if ($event->isa('Wx::KeyEvent')) {
+        return $event -> Skip (1) unless $event -> GetKeyCode() == WXK_SPACE;
+        $item = $self -> SUPER::GetSelection;
+    } else {
+        my $flags;
+        my $pos = $event -> GetPosition;
+        ($item, $flags) = $self -> HitTest ($pos);
+        return $event -> Skip (1) unless $flags & wxTREE_HITTEST_ONITEMICON;
+    }
 
     if ($self -> allow_multiple) {
         $self -> on_select_multiple ($item)
@@ -415,7 +428,7 @@ sub _update_parents {
     my $i_children = $self -> GetChildrenCount ($parent, 0);
 
     my $cookie = int rand 1000;
-    my (@children, $num_sel, $cookie);
+    my (@children, $num_sel);
 
     for ( 1 .. $i_children ) {
         my $child_id;
